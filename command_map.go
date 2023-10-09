@@ -1,9 +1,8 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-
-	"github.com/nronzel/pokedex-cli/internal"
 )
 
 type Config struct {
@@ -11,14 +10,36 @@ type Config struct {
 	Next     string
 }
 
-func commandMap() error {
-	data, err := api.FetchLocation()
+func commandMap(cfg *config) error {
+	locations, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationURL)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-	results := data.Results
-	for _, result := range results {
-		fmt.Println(result.Name)
+
+	cfg.nextLocationURL = locations.Next
+	cfg.prevLocationURL = locations.Previous
+
+	for _, location := range locations.Results {
+		fmt.Println(location.Name)
+	}
+	return nil
+}
+
+func commandMapb(cfg *config) error {
+	if cfg.prevLocationURL == nil {
+		return errors.New("you're on the first page")
+	}
+
+	locations, err := cfg.pokeapiClient.ListLocations(cfg.prevLocationURL)
+	if err != nil {
+		return err
+	}
+
+	cfg.nextLocationURL = locations.Next
+	cfg.prevLocationURL = locations.Previous
+
+	for _, location := range locations.Results {
+		fmt.Println(location.Name)
 	}
 	return nil
 }
