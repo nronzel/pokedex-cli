@@ -1,23 +1,40 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
 	"net/http"
 )
 
-func FetchLocation() {
-	resp, err := http.Get("https://pokeapi.co/api/v2/location?offset=0&limit=20")
+type LocationArea struct {
+	Count    int      `json:"count"`
+	Next     string   `json:"next"`
+	Previous *string  `json:"previous"` // pointer to allow Null string value
+	Results  []Result `json:"results"`
+}
+
+type Result struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+func FetchLocation() (LocationArea, error) {
+	resp, err := http.Get("https://pokeapi.co/api/v2/location-area")
 	if err != nil {
-		fmt.Println(err)
+		return LocationArea{}, err
 	}
 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		return LocationArea{}, err
 	}
 
-	fmt.Printf("Response: %s\n", body)
+	var location LocationArea
+	err = json.Unmarshal(body, &location)
+	if err != nil {
+		return LocationArea{}, err
+	}
+	return location, nil
 }
