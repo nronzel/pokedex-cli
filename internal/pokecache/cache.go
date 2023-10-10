@@ -1,47 +1,56 @@
 package pokecache
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
-func NewCache(interval time.Duration) *Cache {
-	c := &Cache{
-		items:  make(map[string]cacheEntry),
-		ticker: time.NewTicker(interval),
+// NewCache
+func NewCache(interval time.Duration) Cache {
+	c := Cache{
+		cache: make(map[string]cacheEntry),
+		mu:    &sync.Mutex{},
 	}
 	go c.reapLoop(interval)
+
 	return c
 }
 
-func (c *Cache) reapLoop(interval time.Duration) {
-	for {
-		<-c.ticker.C
-		c.mu.Lock()
-		for key, entry := range c.items {
-			if time.Since(entry.createdAt) > interval {
-				delete(c.items, key)
-			}
-		}
-		c.mu.Unlock()
-	}
-}
-
+// Add
 func (c *Cache) Add(key string, value []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.items[key] = cacheEntry{
+	c.cache[key] = cacheEntry{
 		createdAt: time.Now(),
 		val:       value,
 	}
+
 }
 
+// Get
 func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	entry, exists := c.cache[key]
+	return entry.val, exists
+}
 
-	entry, exists := c.items[key]
-	if !exists {
-		return nil, false
+// Removes any expired entries in the cache
+func (c *Cache) reapLoop(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	for range ticker.C {
+		c.reap(time.Now().UTC(), interval)
 	}
 
-	return entry.val, true
+}
+
+func (c *Cache) reap(now time.Time, last time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for k, v := range c.cache {
+		if v.createdAt.Before(now.Add(-last)) {
+			delete(c.cache, k)
+		}
+	}
 }

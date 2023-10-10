@@ -7,9 +7,8 @@ import (
 
 // Main struct for the cache
 type Cache struct {
-	items  map[string]cacheEntry
-	mu     sync.Mutex
-	ticker *time.Ticker
+	cache  map[string]cacheEntry
+	mu     *sync.Mutex
 }
 
 // Represents a single cache entry
