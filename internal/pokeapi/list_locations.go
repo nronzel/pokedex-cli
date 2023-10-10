@@ -12,18 +12,29 @@ func (c *Client) ListLocations(pageURL *string) (LocationArea, error) {
 		url = *pageURL
 	}
 
+	// Check if data is in cache
+	if val, ok := c.cache.Get(url); ok {
+		locations := LocationArea{}
+		err := json.Unmarshal(val, &locations)
+		if err != nil {
+			return LocationArea{}, err
+		}
+
+		return locations, nil
+	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return LocationArea{}, err
 	}
 
-	resp, err := c.httpClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return LocationArea{}, err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return LocationArea{}, err
 	}
@@ -34,5 +45,7 @@ func (c *Client) ListLocations(pageURL *string) (LocationArea, error) {
 		return LocationArea{}, err
 	}
 
+	// add data to cache
+	c.cache.Add(url, data)
 	return locations, nil
 }
