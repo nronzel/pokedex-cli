@@ -10,7 +10,7 @@ type Config struct {
 	Next     string
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, params []string) error {
 	locations, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationURL)
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, params []string) error {
 	if cfg.prevLocationURL == nil {
 		return errors.New("you're on the first page")
 	}

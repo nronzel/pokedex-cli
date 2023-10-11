@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, params []string) error {
 	fmt.Println("Exiting the Pokedex..")
 	os.Exit(0)
 	return nil
