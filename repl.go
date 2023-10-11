@@ -57,6 +57,11 @@ type cliCommand struct {
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+        "help": {
+            name:        "help",
+            description: "Displays a help message",
+            callback:    commandHelp,
+        },
 		"map": {
 			name:        "map",
 			description: "Get next page of locations",
@@ -71,11 +76,6 @@ func getCommands() map[string]cliCommand {
 			name:        "explore <location_name>",
 			description: "Explore a location",
 			callback:    commandExplore,
-		},
-		"help": {
-			name:        "help",
-			description: "Displays a help message",
-			callback:    commandHelp,
 		},
 		"exit": {
 			name:        "exit",
