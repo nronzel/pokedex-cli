@@ -27,7 +27,7 @@ func startRepl(cfg *config) {
 		}
 
 		commandName := words[0]
-        parameters := words[1:]
+		parameters := words[1:]
 
 		command, exists := getCommands()[commandName]
 		if exists {
@@ -66,6 +66,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Get previous page of locations",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explore location to see list of all pokemon in the area",
+			callback:    commandExplore,
 		},
 		"help": {
 			name:        "help",
